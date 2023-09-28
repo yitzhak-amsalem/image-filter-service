@@ -25,7 +25,7 @@ def verify_image(model_image, image_to_filter):
 
 def verify_faces(model_images, images_to_filter, distance_threshold):
     verified_photos = set()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         futures = []
         for image_to_filter in images_to_filter:
             image_filter_base_64 = f'data:image/jpeg;base64,{image_to_filter}'
