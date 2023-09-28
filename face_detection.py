@@ -4,7 +4,7 @@ from deepface import DeepFace
 
 def process(requestModel):
     print("verify faces...")
-    return verify_faces(requestModel.photoModel, requestModel.photoFilter)
+    return verify_faces(requestModel.photoModel, requestModel.photoFilter, requestModel.distance)
 
 
 def verify_image(model_image, image_to_filter):
@@ -23,9 +23,9 @@ def verify_image(model_image, image_to_filter):
     return {"distance": None, "filtered_image": None}
 
 
-def verify_faces(model_images, images_to_filter):
+def verify_faces(model_images, images_to_filter, distance_threshold):
     verified_photos = set()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         futures = []
         for image_to_filter in images_to_filter:
             image_filter_base_64 = f'data:image/jpeg;base64,{image_to_filter}'
@@ -35,12 +35,13 @@ def verify_faces(model_images, images_to_filter):
         for future in concurrent.futures.as_completed(futures):
             results = future.result()
             distance = results["distance"]
-            if distance is not None and distance < 0.6:
+            print(f'>>> {distance}')
+            if distance is not None and distance < distance_threshold:
                 verified_photos.add(results["filtered_image"])
     return list(verified_photos)
 
 
-def verify_faces_sync(model_images, images_to_filter, distance_threshold=0.6):
+def verify_faces_sync(model_images, images_to_filter, distance_threshold):
     verified_photos = set()
     index = 0
     for image_to_filter in images_to_filter:
